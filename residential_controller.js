@@ -1,43 +1,46 @@
-/* var elevatorID = 1
+var elevatorID = 1
 var floorRequestButtonID = 1
-var callButtonID = 1 */
+var callButtonID = 1
 
 class Column {
-    constructor(_id, _amountOfFloors, _amountOfElevators, _status = "Active") {
+    constructor(_id, _amountOfFloors, _amountOfElevators, _status = "Online") {
 
-        this.amountOfFloors = _amountOfFloors
-        this.amountOfElevators = _amountOfElevators
         this.ID = _id
         this.status = _status
         this.elevatorList = []
         this.callButtonList = []
+
         this.createElevators(_amountOfFloors, _amountOfElevators)
         this.createCallButtons(_amountOfFloors)
-
-
     };
+
 
     createCallButtons(_amountOfFloors) {
 
-        buttonFloor = 1
+        var buttonFloor = 1
         for (var i = 0; i < _amountOfFloors; i++) {
-            var callButtonID = i + 1
-            if (buttonFloor < _amountOfFloors) //If it 's not the last floor
-                var callButton = new CallButton(callButtonID, buttonFloor, "up")
-            this.callButtonList.push(callButton)
-            if (buttonFloor > 1)
-                var callButton = new CallButton(callButtonID, buttonFloor, "down") //id, status, floor, direction
-            this.callButtonList.push(callButton)
-            buttonFloor += 1
-
+            if (buttonFloor < _amountOfFloors) {
+                //If it 's not the last floor
+                var callButton = new CallButton(callButtonID, "OFF", buttonFloor, "up")
+                this.callButtonList.push(callButton)
+                callButtonID++;
+            }
+            if (buttonFloor > 1) {
+                var callButton = new CallButton(callButtonID, "OFF", buttonFloor, "down") //id, status, floor, direction
+                this.callButtonList.push(callButton)
+                callButtonID++;
+            }
+            buttonFloor++
         }
     }
+
     createElevators(_amountOfFloors, _amountOfElevators) {
 
         for (var i = 0; i < _amountOfElevators; i++) {
-            var elevatorID = i + 1
+
             var elevator = new Elevator(elevatorID, 1)
             this.elevatorList.push(elevator)
+            elevatorID++;
         }
     }
     requestElevator(floor, direction) {
@@ -46,7 +49,7 @@ class Column {
         elevator.floorRequestList.push(floor)
         elevator.move()
         // elevator.operateDoors
-        return elevator
+        return elevator;
     }
 
     findElevator(requestedFloor, requestedDirection) {
@@ -54,6 +57,7 @@ class Column {
         var bestElevator = this.elevatorList[0]
         var bestScore = 5
         var referenceGap = 10000000
+        var bestElevatorInformation;
 
         this.elevatorList.forEach((elevator) => {
 
@@ -98,28 +102,26 @@ class Column {
 
     checkIfElevatorIsBetter(scoreToCheck, newElevator, bestScore, referenceGap, bestElevator, floor) {
 
-        if (coreToCheck < bestScore) {
-
+        if (scoreToCheck < bestScore) {
             bestScore = scoreToCheck
             bestElevator = newElevator
             referenceGap = Math.abs(newElevator.currentFloor - floor)
 
         } else if (bestScore == scoreToCheck) {
-            gap = Math.abs(newElevator.currentFloor - floor)
+            var gap = Math.abs(newElevator.currentFloor - floor)
             if (referenceGap > gap) {
-
                 bestElevator = newElevator
                 referenceGap = gap
             }
         }
-        return BestElevatorInfo(bestElevator, bestScore, referenceGap)
+        return {
+            referenceGap: referenceGap,
+            bestScore: bestScore,
+            bestElevator: bestElevator,
+        };
 
     }
-
 }
-
-
-
 
 class Elevator {
     constructor(_id, _currentFloor, _status = "idle") {
@@ -127,25 +129,26 @@ class Elevator {
         this.ID = _id
         this.status = _status
         this.currentFloor = _currentFloor
-        this.direction = None
+        this.direction
         var door = new Door(_id)
         this.door = door
         this.floorRequestList = []
         this.floorRequestButtonList = []
         this.createFloorRequestButtons(_currentFloor)
 
-    };
+    }
 
     createFloorRequestButtons(_amountOfFloors) {
-        buttonFloor = 1
+
+        var buttonFloor = 1
 
         for (var i = 0; i < _amountOfFloors; i++) {
 
-            floorRequestButtonID = i + 1
-            floorRequestButton = FloorRequestButton(floorRequestButtonID, buttonFloor)
+            var floorRequestButton = new FloorRequestButton(floorRequestButtonID, buttonFloor)
             this.floorRequestButtonList.push(floorRequestButton)
             buttonFloor += 1
             floorRequestButtonID += 1
+            floorRequestButtonID++;
 
         }
     }
@@ -156,15 +159,15 @@ class Elevator {
     }
 
     move() {
-
+        //var destination;
         while (this.floorRequestList.length > 0) {
-            destination = this.floorRequestList[0]
-            this.status = "moving"
+            var destination = this.floorRequestList[0]
+            this.status = "moving";
             if (this.currentFloor > destination) {
                 this.direction = "down"
                 this.sortFloorList()
                 while (this.currentFloor > destination) {
-                    this.currentFloor = this.currentFloor - 1
+                    this.currentFloor--
                     this.screenDisplay = this.currentFloor
                 }
             } else if (this.currentFloor < destination) {
@@ -172,12 +175,14 @@ class Elevator {
                 this.sortFloorList()
                 while (this.currentFloor < destination) {
 
-                    this.currentFloor += 1
+                    this.currentFloor++;
                     this.screenDisplay = this.currentFloor
-                    this.status = "stopped"
-                    this.floorRequestList.pop(0)
+
                 }
+
             }
+            this.status = "stopped"
+            this.floorRequestList.shift()
         }
         this.status = "idle"
     }
@@ -194,20 +199,6 @@ class Elevator {
     }
 
 }
-
-class BestElevatorInfo {
-    constructor(this, bestElevator, bestScore, referenceGap) {
-
-        this.bestElevator = bestElevator
-        this.bestScore = bestScore
-        this.referenceGap = referenceGap
-    }
-
-}
-
-
-
-
 
 class CallButton {
     constructor(_id, _floor, _direction, _status = "Active") {
