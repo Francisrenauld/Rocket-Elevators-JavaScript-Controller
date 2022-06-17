@@ -48,7 +48,7 @@ class Column {
         var elevator = this.findElevator(floor, direction)
         elevator.floorRequestList.push(floor)
         elevator.move()
-        // elevator.operateDoors
+        elevator.operateDoors()
         return elevator;
     }
 
@@ -155,11 +155,11 @@ class Elevator {
     requestFloor(floor) {
         this.floorRequestList.push(floor)
         this.move()
-        //this.operateDoors
+        this.operateDoors()
     }
 
     move() {
-        //var destination;
+
         while (this.floorRequestList.length > 0) {
             var destination = this.floorRequestList[0]
             this.status = "moving";
@@ -197,6 +197,25 @@ class Elevator {
         }
 
     }
+
+    operateDoors() {
+        var overweight = false
+        var obstruction = false
+        this.door.status = "open"
+
+        //time.sleep(5) // SA  LE FAIT 50 SECONDE SI TU VEUT ATTENDRE 5 SEC IL METTRE 0.5
+        if (overweight == false) {
+            this.door.status = "closing"
+        }
+
+        if (obstruction == false) {
+            this.door.status = "closed"
+        }
+
+    }
+
+
+
 
 }
 
